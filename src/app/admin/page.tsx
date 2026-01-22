@@ -17,27 +17,9 @@ import {
   Cell,
 } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
+import { User, normalizeDate } from "@/types/user";
 
 const COLORS = ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"];
-
-interface User {
-  id: number;
-  name: string;
-  role: "admin" | "qtv";
-  avatar: string;
-  status: "active" | "inactive";
-  soTaiKhoan: string;
-  nganHang: string;
-  ngayThamGia: string;
-  slug: string;
-  facebook: { chinh: string; phu?: string };
-  zalo?: string;
-  web?: string;
-  baoHiem: { ngayDangKy: string; soTien: number; nguoiBaoHiem: string };
-  dichVu: string[];
-  chuTaiKhoan: string;
-  stkKhac: { nganHang: string; soTaiKhoan: string }[];
-}
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
@@ -46,15 +28,15 @@ export default function AdminDashboard() {
   const [joinData, setJoinData] = useState<{ date: string; users: number }[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalInsurance, setTotalInsurance] = useState(0);
-  const [totalServices, setTotalServices] = useState(0);
+  const [totalTrustScore, setTotalTrustScore] = useState(0);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("/user.json");
+        const response = await fetch("/users.json");
         if (!response.ok) throw new Error("Không thể tải dữ liệu người dùng");
         const data: User[] = await response.json();
-        const filtered = data.filter((u) => u.role === "admin" || u.role === "qtv");
+        const filtered = data.filter((u) => u.role === "admin" || u.role === "super_admin");
         setUsers(filtered);
 
         const statusCounts = filtered.reduce((acc, user) => {
@@ -68,18 +50,20 @@ export default function AdminDashboard() {
           }))
         );
 
-        const sortedDates = [...filtered].sort(
-          (a, b) => new Date(a.ngayThamGia).getTime() - new Date(b.ngayThamGia).getTime()
-        );
+        const sortedDates = [...filtered].sort((a, b) => {
+          const dateA = normalizeDate(a.joinedAt);
+          const dateB = normalizeDate(b.joinedAt);
+          return new Date(dateA || 0).getTime() - new Date(dateB || 0).getTime();
+        });
         const cumulative = sortedDates.map((user, index) => ({
-          date: new Date(user.ngayThamGia).toLocaleDateString("vi-VN"),
+          date: new Date(normalizeDate(user.joinedAt) || "").toLocaleDateString("vi-VN"),
           users: index + 1,
         }));
         setJoinData(cumulative);
 
         setTotalUsers(filtered.length);
-        setTotalInsurance(filtered.reduce((sum, user) => sum + user.baoHiem.soTien, 0));
-        setTotalServices(filtered.reduce((sum, user) => sum + user.dichVu.length, 0));
+        setTotalInsurance(filtered.reduce((sum, user) => sum + (user.insurance?.amount || 0), 0));
+        setTotalTrustScore(filtered.reduce((sum, user) => sum + (user.trustScore || 0), 0) / filtered.length);
       } catch (error) {
         console.error(error);
       } finally {
@@ -129,13 +113,13 @@ export default function AdminDashboard() {
 
             <Card className="bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Tổng số dịch vụ</CardTitle>
+                <CardTitle className="text-sm font-medium">Điểm tin cậy trung bình</CardTitle>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
                   <Skeleton className="h-8 w-20" />
                 ) : (
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-300">{totalServices}</div>
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-300">{totalTrustScore.toFixed(1)}/100</div>
                 )}
               </CardContent>
             </Card>

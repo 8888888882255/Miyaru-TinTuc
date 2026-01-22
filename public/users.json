@@ -1,0 +1,116 @@
+[
+  {
+    "_id": { "$oid": "65ae1c2f9b3c8a0012abcd01" },
+    "fullName": "Zuly",
+    "slug": "zuly",
+    "email": "zuly@gmail.com",
+    "emailVerified": true,
+    "role": "admin",
+    "trustScore": 85,
+    "avatar": {
+      "url": "https://sf-static.upanhlaylink.com/img/image_20251020f246f5eea31ab26ae21a6f3851697462.jpg",
+      "alt": "Zuly – System Administration & Security Expert"
+    },
+    "status": "active",
+    "joinedAt": { "$date": "2025-05-05T00:00:00.000Z" },
+    "lastLoginAt": { "$date": "2026-01-22T10:30:00.000Z" },
+    "auth": {
+      "provider": "google",
+      "providerAccountId": "112233445566778899"
+    },
+    "contact": {
+      "facebookPrimary": "61575953281216",
+      "facebookSecondary": "backup.zuly",
+      "zalo": "0383277782",
+      "website": "https://zuly.vn"
+    },
+    "insurance": {
+      "amount": 7000000,
+      "currency": "VND"
+    },
+    "details": [
+      { "title": "MB Bank", "content": "0383277782 - zuly" },
+      { "title": "TP Bank", "content": "0383277782 - zuly" }
+    ],
+    "seo": {
+      "title": "Zuly – Trusted Transaction Verification Expert",
+      "description": "Zuly is a trusted system administration and security expert specializing in transaction verification.",
+      "keywords": ["Zuly", "trusted verification", "system security", "MongoDB"]
+    },
+    "createdAt": { "$date": "2025-05-05T00:00:00.000Z" },
+    "updatedAt": { "$date": "2026-01-22T10:30:00.000Z" }
+  },
+
+  {
+    "_id": { "$oid": "65ae1c2f9b3c8a0012abcd02" },
+    "fullName": "Miyaru",
+    "slug": "miyaru",
+    "email": "miyaru@gmail.com",
+    "emailVerified": true,
+    "role": "super_admin",
+    "trustScore": 95,
+    "avatar": {
+      "url": "https://i.pravatar.cc/300?img=12",
+      "alt": "Miyaru – Platform Owner"
+    },
+    "status": "active",
+    "joinedAt": { "$date": "2025-06-10T00:00:00.000Z" },
+    "lastLoginAt": { "$date": "2026-01-20T08:15:00.000Z" },
+    "auth": {
+      "provider": "google",
+      "providerAccountId": "998877665544332211"
+    },
+    "contact": {
+      "facebookPrimary": "miyaru",
+      "zalo": "0909999999",
+      "website": "https://miyaru.vn"
+    },
+    "insurance": {
+      "amount": 15000000,
+      "currency": "VND"
+    },
+    "details": [],
+    "seo": {
+      "title": "Miyaru – Platform Administrator",
+      "description": "Founder and super administrator of the verification platform.",
+      "keywords": ["Miyaru", "admin", "verification system"]
+    },
+    "createdAt": { "$date": "2025-06-10T00:00:00.000Z" },
+    "updatedAt": { "$date": "2026-01-20T08:15:00.000Z" }
+  },
+
+  {
+    "_id": { "$oid": "65ae1c2f9b3c8a0012abcd03" },
+    "fullName": "Nguyen Van A",
+    "slug": "nguyen-van-a",
+    "email": "usera@gmail.com",
+    "emailVerified": false,
+    "role": "admin",
+    "trustScore": 40,
+    "avatar": {
+      "url": "https://i.pravatar.cc/300?img=25",
+      "alt": "Nguyen Van A"
+    },
+    "status": "inactive",
+    "joinedAt": { "$date": "2025-11-01T00:00:00.000Z" },
+    "auth": {
+      "provider": "credentials"
+    },
+    "contact": {},
+    "insurance": {
+      "amount": 0,
+      "currency": "VND"
+    },
+       "details": [
+      { "title": "MB Bank", "content": "0383277782 - zuly" },
+      { "title": "TP Bank", "content": "0383277782 - zuly" }
+    ],
+    "seo": {
+      "title": "Nguyen Van A",
+      "description": "User profile",
+      "keywords": ["user profile"]
+    },
+    "createdAt": { "$date": "2025-11-01T00:00:00.000Z" },
+    "updatedAt": { "$date": "2025-11-01T00:00:00.000Z" }
+  }
+]

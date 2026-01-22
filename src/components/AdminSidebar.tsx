@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -37,6 +38,21 @@ const menuItems = [
 export function AdminSidebar() {
   const { state } = useSidebar();
   const pathname = usePathname();
+  const [settings, setSettings] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch("/settings.json");
+        const data = await response.json();
+        setSettings(data);
+      } catch (error) {
+        console.error("Error fetching settings:", error);
+      }
+    };
+
+    fetchSettings();
+  }, []);
 
   // TODO: Get from auth context/backend
   const userRole = "SuperAdmin";
@@ -67,14 +83,15 @@ export function AdminSidebar() {
       <SidebarHeader className="border-b px-4 py-3">
         <div className="flex items-center gap-2">
           <div
-            className="h-8 w-8 bg-[url('/Logo.jpg')] bg-cover bg-center rounded-lg"
+            className="h-8 w-8 bg-cover bg-center rounded-lg"
+            style={{ backgroundImage: `url('${settings?.site.logo.url || "/Logo.jpg"}')` }}
           ></div>
           {state !== "collapsed" && (
             <div className="flex flex-col">
               <span
                 className="font-semibold text-base bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent"
               >
-                AdminMmo
+                {settings?.site.name || "AdminMmo"}
               </span>
             </div>
           )}

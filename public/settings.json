@@ -1,0 +1,128 @@
+{
+  "_id": "site_settings",
+
+  "site": {
+    "name": "Admin Mmo",
+    "tagline": "Nền tảng kiểm tra uy tín & giao dịch an toàn",
+    "logo": {
+      "url": "https://sf-static.upanhlaylink.com/img/image_20251020f246f5eea31ab26ae21a6f3851697462.jpg",
+      "alt": "AdminMmo Logo"
+    },
+    "background": {
+      "url": "https://sf-static.upanhlaylink.com/img/image_20251020f246f5eea31ab26ae21a6f3851697462.jpg",
+      "alt": "AdminMmo Background"
+    },
+    "favicon": {
+      "url": "https://sf-static.upanhlaylink.com/img/image_20251020f246f5eea31ab26ae21a6f3851697462.jpg",
+      "alt": "AdminMmo Favicon"
+    },
+    "links": {
+      "homepage": "https://adminmmo.vn",
+      "facebook": "https://facebook.com/adminmmo",
+      "telegram": "https://t.me/adminmmo"
+    }
+  },
+
+  "about": {
+    "hero": {
+      "title": "Về AdminMmo",
+      "description": "AdminMmo là nền tảng giúp người dùng kiểm tra uy tín của cá nhân, tổ chức hoặc thương hiệu trước khi giao dịch, nhằm xây dựng môi trường minh bạch và đáng tin cậy tại Việt Nam."
+    },
+    "mission": {
+      "title": "Sứ mệnh của AdminMmo",
+      "description": "Chúng tôi mong muốn tạo ra một hệ sinh thái kiểm tra uy tín minh bạch, nơi người dùng có thể dễ dàng tra cứu thông tin, chia sẻ đánh giá và xác minh độ tin cậy của đối tác, người bán, hoặc dịch vụ."
+    },
+    "features": [
+      {
+        "icon": "Shield",
+        "title": "Đánh giá uy tín",
+        "description": "Cung cấp công cụ để người dùng tra cứu, đánh giá và chấm điểm độ uy tín của đối tác hoặc tổ chức."
+      },
+      {
+        "icon": "Users",
+        "title": "Cộng đồng minh bạch",
+        "description": "Xây dựng cộng đồng người dùng chia sẻ đánh giá và phản hồi chân thực về trải nghiệm thực tế."
+      },
+      {
+        "icon": "CheckCircle2",
+        "title": "Xác minh thông tin",
+        "description": "Hỗ trợ xác minh thông tin, giúp đảm bảo dữ liệu chính xác và khách quan."
+      },
+      {
+        "icon": "TrendingUp",
+        "title": "Phát triển bền vững",
+        "description": "Không ngừng nâng cấp tính năng và mở rộng dữ liệu để hỗ trợ người dùng tra cứu chính xác hơn."
+      }
+    ],
+    "howItWorksTitle": "Cách hoạt động",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Tra cứu thông tin",
+        "description": "Người dùng nhập tên, số điện thoại, email hoặc tài khoản mạng xã hội để kiểm tra độ uy tín."
+      },
+      {
+        "step": 2,
+        "title": "Xem đánh giá & điểm uy tín",
+        "description": "Kết quả hiển thị các đánh giá, phản hồi và điểm uy tín được tổng hợp từ cộng đồng."
+      },
+      {
+        "step": 3,
+        "title": "Gửi đánh giá của bạn",
+        "description": "Người dùng có thể gửi nhận xét hoặc chấm điểm uy tín để đóng góp cho cộng đồng."
+      },
+      {
+        "step": 4,
+        "title": "Xây dựng môi trường tin cậy",
+        "description": "Mọi người cùng nhau góp phần tạo ra không gian giao dịch minh bạch và an toàn."
+      }
+    ],
+    "communityGuidelines": [
+      "Chia sẻ đánh giá trung thực và dựa trên trải nghiệm thực tế.",
+      "Không đăng tải thông tin sai lệch, mang tính công kích hoặc xúc phạm người khác.",
+      "Tôn trọng quyền riêng tư và bảo mật thông tin người dùng.",
+      "Không quảng cáo, spam hoặc lợi dụng nền tảng cho mục đích thương mại.",
+      "Hợp tác với quản trị viên khi có yêu cầu xác minh thông tin."
+    ]
+  },
+
+  "policies": {
+    "privacyPolicy": {
+      "title": "Chính sách bảo mật",
+      "content": [
+        "AdminMmo cam kết bảo vệ quyền riêng tư của người dùng. Chúng tôi chỉ thu thập các thông tin cần thiết để cung cấp dịch vụ kiểm tra uy tín và không chia sẻ dữ liệu cá nhân với bên thứ ba nếu không có sự đồng ý của bạn.",
+        "Thông tin chúng tôi thu thập bao gồm:",
+        "- Thông tin đăng ký tài khoản (email, tên người dùng)",
+        "- Dữ liệu phản hồi hoặc đánh giá về uy tín",
+        "- Thông tin liên hệ tự nguyện (được bảo mật tuyệt đối)"
+      ]
+    },
+
+    "termsOfService": {
+      "title": "Điều khoản sử dụng",
+      "content": [
+        "Khi sử dụng AdminMmo, bạn đồng ý rằng:",
+        "- Cung cấp thông tin trung thực, chính xác và minh bạch",
+        "- Không đăng tải nội dung sai sự thật, bôi nhọ hoặc gây hiểu nhầm",
+        "- Tôn trọng quyền riêng tư và danh dự của cá nhân, tổ chức khác",
+        "- Không sử dụng hệ thống vào mục đích thương mại trái phép",
+        "- Tuân thủ các quy định pháp luật Việt Nam và chính sách nền tảng"
+      ]
+    }
+  },
+
+  "seo": {
+    "title": "AdminMmo – Kiểm tra uy tín giao dịch",
+    "description": "AdminMmo là nền tảng cộng đồng giúp kiểm tra độ uy tín, đánh giá giao dịch và xây dựng môi trường giao dịch an toàn.",
+    "keywords": [
+      "adminmmo",
+      "kiem tra uy tin",
+      "check scam",
+      "giao dich an toan",
+      "danh gia uy tin"
+    ]
+  },
+
+  "createdAt": "2025-01-01T00:00:00.000Z",
+  "updatedAt": "2026-01-22T00:00:00.000Z"
+}

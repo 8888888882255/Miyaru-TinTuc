@@ -1,14 +1,26 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { Metadata } from "next";
-import AdminDetailContent, { User } from "@/components/admin-detail-content";
+import AdminDetailContent from "@/components/admin-detail-content";
 import { notFound } from "next/navigation";
+import { User, normalizeDate, getAvatarUrl } from "@/types/user";
 
 // Helper để đọc data
 async function getUsers(): Promise<User[]> {
   const publicDir = path.join(process.cwd(), "public");
-  const fileContents = await fs.readFile(path.join(publicDir, "user.json"), "utf8");
+  const fileContents = await fs.readFile(path.join(publicDir, "users.json"), "utf8");
   return JSON.parse(fileContents);
+}
+
+// Helper để đọc settings
+async function getSettings() {
+  try {
+    const publicDir = path.join(process.cwd(), "public");
+    const fileContents = await fs.readFile(path.join(publicDir, "settings.json"), "utf8");
+    return JSON.parse(fileContents);
+  } catch {
+    return null;
+  }
 }
 
 // Generate Static Params để Next.js biết trước các slug nếu build static
@@ -28,20 +40,25 @@ export async function generateMetadata({
   const { slug } = await params;
   const users = await getUsers();
   const user = users.find((u) => u.slug === slug);
+  const settings = await getSettings();
+  const siteName = settings?.site.name || "AdminMmo";
 
   if (!user) {
     return {
-      title: "Không tìm thấy - AdminMmo",
+      title: `Không tìm thấy - ${siteName}`,
     };
   }
 
+  const avatarUrl = getAvatarUrl(user.avatar);
+  const description = user.seo?.description || `Xác minh thông tin của ${user.fullName}. Quỹ bảo hiểm: ${user.insurance?.amount.toLocaleString("vi-VN")}đ.`;
+
   return {
-    title: `${user.name} - Thông tin Admin uy tín`,
-    description: `Xác minh thông tin của ${user.name}. Quỹ bảo hiểm: ${user.baoHiem?.soTien.toLocaleString("vi-VN")}đ. ${user.dichVu?.join(", ")}`,
+    title: `${user.fullName} - Thông tin Admin uy tín`,
+    description: description,
     openGraph: {
-      title: `${user.name} - AdminMmo Việt Nam`,
-      description: `Kiểm tra uy tín của ${user.name}. Quỹ bảo hiểm đảm bảo an toàn giao dịch.`,
-      images: [user.avatar],
+      title: `${user.fullName} - ${siteName} Việt Nam`,
+      description: description,
+      images: [avatarUrl],
     },
   };
 }

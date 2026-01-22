@@ -2,20 +2,40 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Metadata } from "next";
 
+async function getSettings() {
+  try {
+    const response = await fetch(new URL("/settings.json", "http://localhost:3000"), {
+      cache: "no-store",
+    });
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+const settings = {
+  site: {
+    name: "AdminMmo",
+  },
+};
+
 export const metadata: Metadata = {
-  title: "AdminMmo - Cộng đồng AdminMmo Việt Nam",
-  description: "Nền tảng cộng đồng giúp bạn tìm kiếm và xác minh các AdminMmo trực tuyến tại Việt Nam",
-  authors: [{ name: "AdminMmo" }],
+  title: `${settings.site.name} - Cộng đồng ${settings.site.name} Việt Nam`,
+  description: `Nền tảng cộng đồng giúp bạn tìm kiếm và xác minh các ${settings.site.name} trực tuyến tại Việt Nam`,
+  authors: [{ name: settings.site.name }],
+  icons: {
+    icon: "https://sf-static.upanhlaylink.com/img/image_20251020f246f5eea31ab26ae21a6f3851697462.jpg",
+  },
   openGraph: {
-    title: "AdminMmo - Cộng đồng AdminMmo Việt Nam",
-    description: "Nền tảng cộng đồng giúp bạn tìm kiếm và xác minh các AdminMmo trực tuyến",
+    title: `${settings.site.name} - Cộng đồng ${settings.site.name} Việt Nam`,
+    description: `Nền tảng cộng đồng giúp bạn tìm kiếm và xác minh các ${settings.site.name} trực tuyến`,
     type: "website",
-    images: ["/Logo.jpg"],
+    images: ["https://sf-static.upanhlaylink.com/img/image_20251020f246f5eea31ab26ae21a6f3851697462.jpg"],
   },
   twitter: {
     card: "summary_large_image",
     site: "@checkscamvn",
-    images: ["/Logo.jpg"],
+    images: ["https://sf-static.upanhlaylink.com/img/image_20251020f246f5eea31ab26ae21a6f3851697462.jpg"],
   },
 };
 
@@ -27,6 +47,7 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <head>
+        <link rel="icon" href="https://sf-static.upanhlaylink.com/img/image_20251020f246f5eea31ab26ae21a6f3851697462.jpg" type="image/jpeg" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link

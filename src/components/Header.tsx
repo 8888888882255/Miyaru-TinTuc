@@ -1,15 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Moon, Sun, Menu, X } from "lucide-react";
+import { Moon, Sun, Menu, X, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+interface Settings {
+  site: {
+    name: string;
+    logo: {
+      url: string;
+      alt: string;
+    };
+  };
+}
 
 export const Header = () => {
   const [isDark, setIsDark] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [settings, setSettings] = useState<Settings | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch("/settings.json");
+        const data = await response.json();
+        setSettings(data);
+      } catch (error) {
+        console.error("Error fetching settings:", error);
+      }
+    };
+
+    fetchSettings();
+  }, []);
 
   const toggleTheme = () => {
     setIsDark(!isDark);
@@ -25,12 +51,12 @@ export const Header = () => {
           {/* Logo + tên thương hiệu */}
           <Link href="/" className="flex items-center gap-3 group">
             <img
-              src="/Logo.jpg"
-              alt="Logo AdminMmo"
+              src={settings?.site.logo.url || "/Logo.jpg"}
+              alt={settings?.site.logo.alt || "Logo AdminMmo"}
               className="w-12 h-12 rounded-2xl object-cover shadow-md group-hover:scale-110 transition-transform duration-300"
             />
             <span className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent group-hover:opacity-80 transition-opacity">
-              AdminMmo
+              {settings?.site.name || "AdminMmo"}
             </span>
           </Link>
 
@@ -44,7 +70,7 @@ export const Header = () => {
                 onClick={() => router.push("/")}
                 className="whitespace-nowrap font-semibold bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:opacity-90 transition-all"
               >
-                🚨 Danh Sách Admin
+                🚨 Danh Sách {settings?.site.name || "AdminMmo"}
               </Button>
               <Button
                 variant="outline"
@@ -73,6 +99,37 @@ export const Header = () => {
             >
               {isDark ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-blue-500" />}
             </Button>
+
+            {/* User menu toggle */}
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="rounded-xl border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+              >
+                <User className="w-5 h-5 text-purple-500" />
+              </Button>
+
+              {/* User menu dropdown */}
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl shadow-xl z-50 animate-fade-in">
+                  <div className="p-4 space-y-2">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        router.push("/login");
+                        setUserMenuOpen(false);
+                      }}
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Đăng nhập
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Menu mobile */}
             <Button

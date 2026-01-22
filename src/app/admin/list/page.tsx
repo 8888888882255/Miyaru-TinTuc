@@ -39,41 +39,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search, Edit, Trash2, Plus, Minus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-
-interface FacebookInfo {
-  chinh: string;
-  phu?: string;
-}
-
-interface BaoHiem {
-  ngayDangKy: string;
-  soTien: number;
-  nguoiBaoHiem: string;
-}
-
-interface TaiKhoanPhu {
-  nganHang: string;
-  soTaiKhoan: string;
-}
-
-interface User {
-  id: string;
-  name: string;
-  role: "admin" | "qtv";
-  avatar: string;
-  status: "active" | "inactive";
-  soTaiKhoan: string;
-  nganHang: string;
-  ngayThamGia: string;
-  slug: string;
-  facebook: FacebookInfo;
-  zalo?: string;
-  web?: string;
-  baoHiem: BaoHiem;
-  dichVu: string[];
-  chuTaiKhoan: string;
-  stkKhac: TaiKhoanPhu[];
-}
+import { User, getAvatarUrl, normalizeDate } from "@/types/user";
 
 export default function AdminList() {
   const [users, setUsers] = useState<User[]>([]);
@@ -88,20 +54,19 @@ export default function AdminList() {
   const itemsPerPage = 10;
 
   // Form states for multi-input fields
-  const [dichVuInputs, setDichVuInputs] = useState<string[]>([""]);
-  const [stkKhacInputs, setStkKhacInputs] = useState<{ nganHang: string; soTaiKhoan: string }[]>([{ nganHang: "", soTaiKhoan: "" }]);
+  const [detailInputs, setDetailInputs] = useState<{ title: string; content: string }[]>([{ title: "", content: "" }]);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("/user.json");
+        const response = await fetch("/users.json");
         if (!response.ok) {
           throw new Error("Failed to fetch users");
         }
         const data = await response.json();
         const mappedUsers = data.map((u: any, index: number) => ({
           ...u,
-          id: (index + 1).toString(),
+          id: u._id?.$oid || (index + 1).toString(),
         }));
         setUsers(mappedUsers);
       } catch (error) {
@@ -119,11 +84,9 @@ export default function AdminList() {
 
   useEffect(() => {
     if (editingUser) {
-      setDichVuInputs(editingUser.dichVu.length > 0 ? [...editingUser.dichVu] : [""]);
-      setStkKhacInputs(editingUser.stkKhac.length > 0 ? [...editingUser.stkKhac] : [{ nganHang: "", soTaiKhoan: "" }]);
+      setDetailInputs(editingUser.details && editingUser.details.length > 0 ? [...editingUser.details] : [{ title: "", content: "" }]);
     } else {
-      setDichVuInputs([""]);
-      setStkKhacInputs([{ nganHang: "", soTaiKhoan: "" }]);
+      setDetailInputs([{ title: "", content: "" }]);
     }
   }, [editingUser]);
 
@@ -150,32 +113,16 @@ export default function AdminList() {
     setIsFormOpen(true);
   };
 
-  const addDichVuInput = () => {
-    setDichVuInputs((prev) => [...prev, ""]);
+  const addDetailInput = () => {
+    setDetailInputs((prev) => [...prev, { title: "", content: "" }]);
   };
 
-  const removeDichVuInput = (index: number) => {
-    setDichVuInputs((prev) => prev.filter((_, i) => i !== index));
+  const removeDetailInput = (index: number) => {
+    setDetailInputs((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const updateDichVuInput = (index: number, value: string) => {
-    setDichVuInputs((prev) => {
-      const newInputs = [...prev];
-      newInputs[index] = value;
-      return newInputs;
-    });
-  };
-
-  const addStkKhacInput = () => {
-    setStkKhacInputs((prev) => [...prev, { nganHang: "", soTaiKhoan: "" }]);
-  };
-
-  const removeStkKhacInput = (index: number) => {
-    setStkKhacInputs((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const updateStkKhacInput = (index: number, field: "nganHang" | "soTaiKhoan", value: string) => {
-    setStkKhacInputs((prev) => {
+  const updateDetailInput = (index: number, field: "title" | "content", value: string) => {
+    setDetailInputs((prev) => {
       const newInputs = [...prev];
       newInputs[index] = { ...newInputs[index], [field]: value };
       return newInputs;
@@ -185,50 +132,58 @@ export default function AdminList() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const name = formData.get("name") as string;
-    const slug = (formData.get("slug") as string) || name.toLowerCase().replace(/\s+/g, "-");
-    const facebookPhu = formData.get("facebookPhu") as string;
+    const fullName = formData.get("fullName") as string;
+    const slug = (formData.get("slug") as string) || fullName.toLowerCase().replace(/\s+/g, "-");
+    const facebookSecondary = formData.get("facebookSecondary") as string;
     const zalo = formData.get("zalo") as string;
-    const web = formData.get("web") as string;
+    const website = formData.get("website") as string;
+    const trustScore = parseInt(formData.get("trustScore") as string, 10) || 50;
+
     const newUser: User = {
-      id: editingUser ? editingUser.id : Date.now().toString(),
-      name,
-      role: formData.get("role") as "admin" | "qtv",
-      avatar: formData.get("avatar") as string,
-      status: formData.get("status") as "active" | "inactive",
-      soTaiKhoan: formData.get("soTaiKhoan") as string,
-      nganHang: formData.get("nganHang") as string,
-      ngayThamGia: formData.get("ngayThamGia") as string,
+      _id: editingUser?._id,
+      fullName,
       slug,
-      facebook: {
-        chinh: formData.get("facebookChinh") as string,
-        phu: facebookPhu ? facebookPhu : undefined,
+      email: formData.get("email") as string,
+      emailVerified: false,
+      role: formData.get("role") as "admin" | "super_admin" | "user",
+      trustScore,
+      avatar: {
+        url: formData.get("avatarUrl") as string,
+        alt: fullName,
       },
-      zalo: zalo ? zalo : undefined,
-      web: web ? web : undefined,
-      baoHiem: {
-        ngayDangKy: formData.get("baoHiemNgayDangKy") as string,
-        soTien: parseInt(formData.get("baoHiemSoTien") as string, 10) || 0,
-        nguoiBaoHiem: formData.get("baoHiemNguoiBaoHiem") as string,
+      status: formData.get("status") as "active" | "inactive",
+      joinedAt: formData.get("joinedAt") as string,
+      contact: {
+        facebookPrimary: formData.get("facebookPrimary") as string,
+        facebookSecondary: facebookSecondary ? facebookSecondary : undefined,
+        zalo: zalo ? zalo : undefined,
+        website: website ? website : undefined,
       },
-      dichVu: dichVuInputs.filter((dv) => dv.trim()),
-      chuTaiKhoan: formData.get("chuTaiKhoan") as string,
-      stkKhac: stkKhacInputs.filter((stk) => stk.nganHang.trim() && stk.soTaiKhoan.trim()),
+      insurance: {
+        amount: parseInt(formData.get("insuranceAmount") as string, 10) || 0,
+        currency: "VND",
+      },
+      details: detailInputs.filter((d) => d.title.trim() && d.content.trim()),
+      seo: {
+        title: formData.get("seoTitle") as string,
+        description: formData.get("seoDescription") as string,
+        keywords: (formData.get("seoKeywords") as string).split(",").map(k => k.trim()),
+      },
     };
 
     if (editingUser) {
       setUsers((prev) =>
-        prev.map((u) => (u.id === editingUser.id ? newUser : u))
+        prev.map((u) => (u.slug === editingUser.slug ? newUser : u))
       );
       toast({
         title: "Đã cập nhật quản trị viên",
-        description: `${name} đã được cập nhật.`,
+        description: `${fullName} đã được cập nhật.`,
       });
     } else {
       setUsers((prev) => [...prev, newUser]);
       toast({
         title: "Đã thêm quản trị viên",
-        description: `${name} đã được thêm vào hệ thống.`,
+        description: `${fullName} đã được thêm vào hệ thống.`,
       });
     }
     setIsFormOpen(false);
@@ -236,10 +191,10 @@ export default function AdminList() {
 
   const handleDelete = () => {
     if (selectedUser) {
-      setUsers((prev) => prev.filter((u) => u.id !== selectedUser.id));
+      setUsers((prev) => prev.filter((u) => u.slug !== selectedUser.slug));
       toast({
         title: "Đã xóa quản trị viên",
-        description: `${selectedUser.name} đã được xóa khỏi hệ thống.`,
+        description: `${selectedUser.fullName} đã được xóa khỏi hệ thống.`,
       });
       setDeleteDialogOpen(false);
       setSelectedUser(null);
@@ -250,7 +205,9 @@ export default function AdminList() {
     switch (role) {
       case "admin":
         return "destructive";
-      case "qtv":
+      case "super_admin":
+        return "secondary";
+      case "user":
         return "default";
       default:
         return "outline";
@@ -265,6 +222,8 @@ export default function AdminList() {
       .toUpperCase()
       .slice(0, 2);
   };
+
+  const joinedDate = editingUser ? normalizeDate(editingUser.joinedAt) : new Date().toISOString().split('T')[0];
 
   return (
     <AdminLayout>
@@ -297,7 +256,8 @@ export default function AdminList() {
               <SelectContent>
                 <SelectItem value="all">Tất cả quyền</SelectItem>
                 <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="qtv">QTV</SelectItem>
+                <SelectItem value="super_admin">Super Admin</SelectItem>
+                <SelectItem value="user">User</SelectItem>
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -318,128 +278,142 @@ export default function AdminList() {
                 <TableRow>
                   <TableHead>Admin</TableHead>
                   <TableHead>Quyền</TableHead>
+                  <TableHead>Tin cậy</TableHead>
                   <TableHead>Ngày tham gia</TableHead>
                   <TableHead>Trạng thái</TableHead>
                   <TableHead className="text-right">Hành động</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {currentUsers.map((user) => (
-                  <TableRow
-                    key={user.id}
-                    className="hover:bg-primary/5 transition-colors"
-                  >
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={user.avatar} />
-                          <AvatarFallback className="bg-primary/10 text-primary">
-                            {getInitials(user.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="font-medium">{user.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getRoleBadgeVariant(user.role)}>
-                        {user.role.toUpperCase()}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {new Date(user.ngayThamGia).toLocaleDateString("vi-VN")}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={user.status === "active" ? "success" : "destructive"}
-                      >
-                        {user.status === "active" ? "🟢 Hoạt động" : "🔴 Không hoạt động"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleOpenForm(user)}
+                {currentUsers.map((user) => {
+                  const joinDate = normalizeDate(user.joinedAt);
+                  return (
+                    <TableRow
+                      key={user.slug}
+                      className="hover:bg-primary/5 transition-colors"
+                    >
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={getAvatarUrl(user.avatar)} />
+                            <AvatarFallback className="bg-primary/10 text-primary">
+                              {getInitials(user.fullName)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium">{user.fullName}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getRoleBadgeVariant(user.role)}>
+                          {user.role.toUpperCase()}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm font-medium">{user.trustScore || 0}/100</span>
+                      </TableCell>
+                      <TableCell>
+                        {joinDate ? new Date(joinDate).toLocaleDateString("vi-VN") : "N/A"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={user.status === "active" ? "default" : "destructive"}
                         >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setDeleteDialogOpen(true);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                          {user.status === "active" ? "🟢 Hoạt động" : "🔴 Không hoạt động"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleOpenForm(user)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setDeleteDialogOpen(true);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
 
           <div className="md:hidden space-y-4">
-            {currentUsers.map((user) => (
-              <div
-                key={user.id}
-                className="rounded-lg border bg-card p-4 shadow-soft space-y-3"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage src={user.avatar} />
-                      <AvatarFallback className="bg-primary/10 text-primary">
-                        {getInitials(user.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h3 className="font-semibold">{user.name}</h3>
+            {currentUsers.map((user) => {
+              const joinDate = normalizeDate(user.joinedAt);
+              return (
+                <div
+                  key={user.slug}
+                  className="rounded-lg border bg-card p-4 shadow-soft space-y-3"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarImage src={getAvatarUrl(user.avatar)} />
+                        <AvatarFallback className="bg-primary/10 text-primary">
+                          {getInitials(user.fullName)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h3 className="font-semibold">{user.fullName}</h3>
+                      </div>
                     </div>
+                    <Badge
+                      variant={user.status === "active" ? "default" : "destructive"}
+                    >
+                      {user.status === "active" ? "🟢" : "🔴"}
+                    </Badge>
                   </div>
-                  <Badge
-                    variant={user.status === "active" ? "success" : "destructive"}
-                  >
-                    {user.status === "active" ? "🟢" : "🔴"}
-                  </Badge>
-                </div>
 
-                <div className="flex items-center gap-2 text-sm">
-                  <Badge variant={getRoleBadgeVariant(user.role)}>
-                    {user.role.toUpperCase()}
-                  </Badge>
-                  <span className="text-muted-foreground">•</span>
-                  <span className="text-muted-foreground">
-                    {new Date(user.ngayThamGia).toLocaleDateString("vi-VN")}
-                  </span>
-                </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Badge variant={getRoleBadgeVariant(user.role)}>
+                      {user.role.toUpperCase()}
+                    </Badge>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="text-muted-foreground">
+                      Tin cậy: {user.trustScore || 0}%
+                    </span>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="text-muted-foreground">
+                      {joinDate ? new Date(joinDate).toLocaleDateString("vi-VN") : "N/A"}
+                    </span>
+                  </div>
 
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => handleOpenForm(user)}
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Chỉnh sửa
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedUser(user);
-                      setDeleteDialogOpen(true);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => handleOpenForm(user)}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Chỉnh sửa
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedUser(user);
+                        setDeleteDialogOpen(true);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {filteredUsers.length === 0 && (
@@ -493,13 +467,13 @@ export default function AdminList() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="max-h-[60vh] overflow-y-auto pr-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium mb-1">
-                  Tên
+                <label htmlFor="fullName" className="block text-sm font-medium mb-1">
+                  Tên đầy đủ
                 </label>
                 <Input
-                  id="name"
-                  name="name"
-                  defaultValue={editingUser?.name || ""}
+                  id="fullName"
+                  name="fullName"
+                  defaultValue={editingUser?.fullName || ""}
                   required
                 />
               </div>
@@ -515,30 +489,55 @@ export default function AdminList() {
                 />
               </div>
               <div>
+                <label htmlFor="email" className="block text-sm font-medium mb-1">
+                  Email
+                </label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  defaultValue={editingUser?.email || ""}
+                />
+              </div>
+              <div>
                 <label htmlFor="role" className="block text-sm font-medium mb-1">
                   Quyền hạn
                 </label>
                 <Select
                   name="role"
-                  defaultValue={editingUser?.role || "qtv"}
+                  defaultValue={editingUser?.role || "admin"}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Chọn quyền hạn" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="qtv">QTV</SelectItem>
+                    <SelectItem value="super_admin">Super Admin</SelectItem>
+                    <SelectItem value="user">User</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <label htmlFor="avatar" className="block text-sm font-medium mb-1">
+                <label htmlFor="trustScore" className="block text-sm font-medium mb-1">
+                  Điểm tin cậy (0-100)
+                </label>
+                <Input
+                  id="trustScore"
+                  name="trustScore"
+                  type="number"
+                  min="0"
+                  max="100"
+                  defaultValue={editingUser?.trustScore || 50}
+                />
+              </div>
+              <div>
+                <label htmlFor="avatarUrl" className="block text-sm font-medium mb-1">
                   Avatar URL
                 </label>
                 <Input
-                  id="avatar"
-                  name="avatar"
-                  defaultValue={editingUser?.avatar || ""}
+                  id="avatarUrl"
+                  name="avatarUrl"
+                  defaultValue={typeof editingUser?.avatar === 'string' ? editingUser.avatar : editingUser?.avatar?.url || ""}
                   required
                 />
               </div>
@@ -560,36 +559,36 @@ export default function AdminList() {
                 </Select>
               </div>
               <div>
-                <label htmlFor="ngayThamGia" className="block text-sm font-medium mb-1">
+                <label htmlFor="joinedAt" className="block text-sm font-medium mb-1">
                   Ngày tham gia
                 </label>
                 <Input
-                  id="ngayThamGia"
-                  name="ngayThamGia"
+                  id="joinedAt"
+                  name="joinedAt"
                   type="date"
-                  defaultValue={editingUser?.ngayThamGia || ""}
+                  defaultValue={joinedDate}
                   required
                 />
               </div>
               <div>
-                <label htmlFor="facebookChinh" className="block text-sm font-medium mb-1">
+                <label htmlFor="facebookPrimary" className="block text-sm font-medium mb-1">
                   Facebook chính
                 </label>
                 <Input
-                  id="facebookChinh"
-                  name="facebookChinh"
-                  defaultValue={editingUser?.facebook.chinh || ""}
+                  id="facebookPrimary"
+                  name="facebookPrimary"
+                  defaultValue={editingUser?.contact?.facebookPrimary || ""}
                   required
                 />
               </div>
               <div>
-                <label htmlFor="facebookPhu" className="block text-sm font-medium mb-1">
+                <label htmlFor="facebookSecondary" className="block text-sm font-medium mb-1">
                   Facebook phụ (tùy chọn)
                 </label>
                 <Input
-                  id="facebookPhu"
-                  name="facebookPhu"
-                  defaultValue={editingUser?.facebook.phu || ""}
+                  id="facebookSecondary"
+                  name="facebookSecondary"
+                  defaultValue={editingUser?.contact?.facebookSecondary || ""}
                 />
               </div>
               <div>
@@ -599,71 +598,53 @@ export default function AdminList() {
                 <Input
                   id="zalo"
                   name="zalo"
-                  defaultValue={editingUser?.zalo || ""}
+                  defaultValue={editingUser?.contact?.zalo || ""}
                 />
               </div>
               <div>
-                <label htmlFor="web" className="block text-sm font-medium mb-1">
+                <label htmlFor="website" className="block text-sm font-medium mb-1">
                   Website (tùy chọn)
                 </label>
                 <Input
-                  id="web"
-                  name="web"
-                  defaultValue={editingUser?.web || ""}
+                  id="website"
+                  name="website"
+                  defaultValue={editingUser?.contact?.website || ""}
                 />
               </div>
               <div>
-                <label htmlFor="baoHiemNgayDangKy" className="block text-sm font-medium mb-1">
-                  Ngày đăng ký bảo hiểm
-                </label>
-                <Input
-                  id="baoHiemNgayDangKy"
-                  name="baoHiemNgayDangKy"
-                  type="date"
-                  defaultValue={editingUser?.baoHiem.ngayDangKy || ""}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="baoHiemSoTien" className="block text-sm font-medium mb-1">
+                <label htmlFor="insuranceAmount" className="block text-sm font-medium mb-1">
                   Số tiền bảo hiểm
                 </label>
                 <Input
-                  id="baoHiemSoTien"
-                  name="baoHiemSoTien"
+                  id="insuranceAmount"
+                  name="insuranceAmount"
                   type="number"
-                  defaultValue={editingUser?.baoHiem.soTien || ""}
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="baoHiemNguoiBaoHiem" className="block text-sm font-medium mb-1">
-                  Người bảo hiểm
-                </label>
-                <Input
-                  id="baoHiemNguoiBaoHiem"
-                  name="baoHiemNguoiBaoHiem"
-                  defaultValue={editingUser?.baoHiem.nguoiBaoHiem || ""}
+                  defaultValue={editingUser?.insurance?.amount || 0}
                   required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Dịch vụ cung cấp
+                  Thông tin chi tiết (tài khoản)
                 </label>
-                {dichVuInputs.map((dv, index) => (
+                {detailInputs.map((detail, index) => (
                   <div key={index} className="flex items-center gap-2 mb-2">
                     <Input
-                      value={dv}
-                      onChange={(e) => updateDichVuInput(index, e.target.value)}
-                      placeholder={`Dịch vụ ${index + 1}`}
+                      value={detail.title}
+                      onChange={(e) => updateDetailInput(index, "title", e.target.value)}
+                      placeholder={`Tiêu đề ${index + 1}`}
+                    />
+                    <Input
+                      value={detail.content}
+                      onChange={(e) => updateDetailInput(index, "content", e.target.value)}
+                      placeholder={`Nội dung ${index + 1}`}
                     />
                     <Button 
                       type="button" 
                       variant="outline" 
                       size="icon" 
-                      onClick={() => addDichVuInput()}
-                      disabled={index !== dichVuInputs.length - 1}
+                      onClick={() => addDetailInput()}
+                      disabled={index !== detailInputs.length - 1}
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
@@ -671,8 +652,8 @@ export default function AdminList() {
                       type="button" 
                       variant="outline" 
                       size="icon" 
-                      onClick={() => removeDichVuInput(index)}
-                      disabled={dichVuInputs.length === 1}
+                      onClick={() => removeDetailInput(index)}
+                      disabled={detailInputs.length === 1}
                     >
                       <Minus className="h-4 w-4" />
                     </Button>
@@ -680,74 +661,37 @@ export default function AdminList() {
                 ))}
               </div>
               <div>
-                <label htmlFor="chuTaiKhoan" className="block text-sm font-medium mb-1">
-                  Chủ tài khoản
+                <label htmlFor="seoTitle" className="block text-sm font-medium mb-1">
+                  Tiêu đề SEO
                 </label>
                 <Input
-                  id="chuTaiKhoan"
-                  name="chuTaiKhoan"
-                  defaultValue={editingUser?.chuTaiKhoan || ""}
+                  id="seoTitle"
+                  name="seoTitle"
+                  defaultValue={editingUser?.seo?.title || ""}
                   required
                 />
               </div>
               <div>
-                <label htmlFor="nganHang" className="block text-sm font-medium mb-1">
-                  Ngân hàng chính
+                <label htmlFor="seoDescription" className="block text-sm font-medium mb-1">
+                  Mô tả SEO
                 </label>
                 <Input
-                  id="nganHang"
-                  name="nganHang"
-                  defaultValue={editingUser?.nganHang || ""}
+                  id="seoDescription"
+                  name="seoDescription"
+                  defaultValue={editingUser?.seo?.description || ""}
                   required
                 />
               </div>
               <div>
-                <label htmlFor="soTaiKhoan" className="block text-sm font-medium mb-1">
-                  Số tài khoản chính
+                <label htmlFor="seoKeywords" className="block text-sm font-medium mb-1">
+                  Từ khóa SEO (cách nhau bằng dấu phẩy)
                 </label>
                 <Input
-                  id="soTaiKhoan"
-                  name="soTaiKhoan"
-                  defaultValue={editingUser?.soTaiKhoan || ""}
+                  id="seoKeywords"
+                  name="seoKeywords"
+                  defaultValue={editingUser?.seo?.keywords?.join(", ") || ""}
                   required
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Tài khoản phụ
-                </label>
-                {stkKhacInputs.map((stk, index) => (
-                  <div key={index} className="flex items-center gap-2 mb-2">
-                    <Input
-                      value={stk.nganHang}
-                      onChange={(e) => updateStkKhacInput(index, "nganHang", e.target.value)}
-                      placeholder={`Ngân hàng phụ ${index + 1}`}
-                    />
-                    <Input
-                      value={stk.soTaiKhoan}
-                      onChange={(e) => updateStkKhacInput(index, "soTaiKhoan", e.target.value)}
-                      placeholder={`Số TK phụ ${index + 1}`}
-                    />
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      size="icon" 
-                      onClick={() => addStkKhacInput()}
-                      disabled={index !== stkKhacInputs.length - 1}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      size="icon" 
-                      onClick={() => removeStkKhacInput(index)}
-                      disabled={stkKhacInputs.length === 1}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
               </div>
             </div>
             <Button type="submit" className="w-full">
@@ -762,7 +706,7 @@ export default function AdminList() {
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận xóa quản trị viên</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa {selectedUser?.name}? Hành động này không thể hoàn tác.
+              Bạn có chắc chắn muốn xóa {selectedUser?.fullName}? Hành động này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

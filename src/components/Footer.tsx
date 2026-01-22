@@ -1,4 +1,15 @@
+import { useEffect, useState } from "react";
+
 export const Footer = () => {
+  const [settings, setSettings] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/settings.json")
+      .then((res) => res.json())
+      .then((data) => setSettings(data))
+      .catch((err) => console.error("Error fetching settings:", err));
+  }, []);
+
   return (
     <footer className="mt-10 border-t bg-card">
       <div className="container mx-auto px-4 py-8 text-center md:text-left">
@@ -6,7 +17,7 @@ export const Footer = () => {
           
           {/* Logo + mô tả */}
           <div className="text-sm text-muted-foreground">
-            <p className="font-medium text-primary">© 2025 AdminMmo</p>
+            <p className="font-medium text-primary">© 2025 {settings?.site.name || "AdminMmo"}</p>
             <p>Hệ thống kiểm tra uy tín hàng đầu Việt Nam.</p>
           </div>
 

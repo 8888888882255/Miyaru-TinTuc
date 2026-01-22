@@ -1,20 +1,43 @@
-# 1️⃣ Sử dụng Node base image
-FROM node:18
+# Stage 1: Build
+FROM node:18-alpine AS builder
 
-# 2️⃣ Tạo thư mục làm việc
 WORKDIR /app
 
-# 3️⃣ Copy file package.json và package-lock.json
+# Copy package files
 COPY package*.json ./
 
-# 4️⃣ Cài đặt dependencies
-RUN npm install
+# Install dependencies
+RUN npm ci
 
-# 5️⃣ Copy toàn bộ mã nguồn
+# Copy source code
 COPY . .
 
-# 6️⃣ Mở port cho Vite
-EXPOSE 5173
+# Build Next.js application
+RUN npm run build
 
-# 7️⃣ Chạy dev server
-CMD ["npm", "run", "dev"]
+# Stage 2: Production
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install only production dependencies
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Copy built application from builder
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/next.config.js ./next.config.js
+
+# Expose port
+EXPOSE 3000
+
+# Environment variable for production
+ENV NODE_ENV=production
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:3000', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+
+# Start production server
+CMD ["npm", "run", "start"]
