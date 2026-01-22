@@ -1,0 +1,70 @@
+{
+  "_id": "ObjectId",
+
+  "fullName": "Zuly",
+  "slug": "zuly",
+
+  "email": "zuly@gmail.com",
+  "emailVerified": true,
+
+  "role": "admin",
+  "trustScore": 85,
+
+  "avatar": {
+    "url": "https://sf-static.upanhlaylink.com/img/image_20251020f246f5eea31ab26ae21a6f3851697462.jpg",
+    "alt": "Zuly – System Administration & Security Expert"
+  },
+
+  "status": "active",
+
+  "joinedAt": "2025-05-05T00:00:00.000Z",
+  "lastLoginAt": "2026-01-22T10:30:00.000Z",
+
+  "auth": {
+    "provider": "google",
+    "providerAccountId": "112233445566778899"
+  },
+
+  "contact": {
+    "facebookPrimary": "https://facebook.com/61575953281216",
+    "facebookSecondary": "https://facebook.com/backup.zuly",
+    "zalo": "0383277782",
+    "website": "https://zuly.vn"
+  },
+
+  "insurance": {
+    "amount": 7000000,
+    "currency": "VND"
+  },
+
+  "details": [
+    {
+      "title": "MB Bank",
+      "content": "0383277782 - zuly"
+    },
+    {
+      "title": "TP Bank",
+      "content": "0383277782 - zuly"
+    }
+  ],
+
+  "seo": {
+    "title": "Zuly – Trusted Transaction Verification Expert",
+    "description": "Zuly is a trusted system administration and security expert specializing in transaction verification and website security.",
+    "keywords": [
+      "Zuly",
+      "trusted verification",
+      "transaction trust check",
+      "system security expert",
+      "Google verified login",
+      "Next.js",
+      "MongoDB"
+    ]
+  },
+
+  "createdAt": "2025-05-05T00:00:00.000Z",
+  "updatedAt": "2026-01-22T10:30:00.000Z"
+}
+
+
+xây dựng theo cấu truc này
