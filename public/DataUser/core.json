@@ -1,0 +1,20 @@
+[{
+    "MaNguoiDung": 1,
+    "HoTen": "Zuly",
+    "TenKhongDau": "zuly",
+    "VaiTro": "super_admin",
+    "TrangThai": "hoat_dong",
+    "NgayThamGia": "2025-05-05",
+    "Gmail": "miyaru2k5@gmail.com",
+    "SoTienBaoHiem": 7000000
+},
+{
+    "MaNguoiDung": 2,
+    "HoTen": "Miyaru",
+    "TenKhongDau": "miyaru",
+    "VaiTro": "admin",
+    "TrangThai": "hoat_dong",
+    "NgayThamGia": "2025-06-10",
+    "Gmail": "miyaru2k5@gmail.com",
+    "SoTienBaoHiem": 666660
+}]

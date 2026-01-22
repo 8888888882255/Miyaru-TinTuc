@@ -10,7 +10,9 @@
     "ngayThamGia": "2025-05-05",
     "slug": "zuly",
     "facebook": {
-      "chinh": "61575953281216"
+      "chinh": "61575953281216",
+      "phu": "backup.zuly"
+
     },
     "zalo": "0383277782",
     "web": "https://zuly.vn",
@@ -42,7 +44,10 @@
     "ngayThamGia": "2025-05-05",
     "slug": "miyaru",
     "facebook": {
-      "chinh": "61575836317300"
+      "chinh": "61575836317300",
+      "phu": "backup.miyaru",
+      "phu1": "miyaru.offical",
+      "phu2": "miyaru.tech"
     },
     "zalo": "0383277782",
     "web": "",

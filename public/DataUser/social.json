@@ -1,0 +1,52 @@
+[{
+    "MaNguoiDung": 1,
+    "MangXaHoi": [
+        {
+            "LoaiMang": "facebook",
+            "TenHienThi": "Facebook",
+            "TaiKhoan": [
+                {
+                    "ViTri": "chinh",
+                    "TenTaiKhoan": "Facebook Zuly",
+                    "DuongDan": "https://facebook.com/61575953281216",
+                    "MoTa": "Trang Facebook chính thức của Zuly",
+                    "TrangThai": "hoat_dong"
+                },
+                {
+                    "ViTri": "phu",
+                    "TenTaiKhoan": "Facebook Zuly Backup",
+                    "DuongDan": "https://facebook.com/backup.zuly",
+                    "MoTa": "Trang Facebook dự phòng của Zuly",
+                    "TrangThai": "hoat_dong"
+                }
+            ]
+        },
+        {
+            "LoaiMang": "zalo",
+            "TenHienThi": "Zalo",
+            "TaiKhoan": [
+                {
+                    "ViTri": "chinh",
+                    "TenTaiKhoan": "Zalo Zuly",
+                    "DuongDan": "https://zalo.me/0383277782",
+                    "MoTa": "Liên hệ Zuly qua Zalo",
+                    "TrangThai": "hoat_dong"
+                }
+            ]
+        },
+        {
+            "LoaiMang": "website",
+            "TenHienThi": "Website",
+            "TaiKhoan": [
+                {
+                    "ViTri": "chinh",
+                    "TenTaiKhoan": "Website Zuly",
+                    "DuongDan": "https://zuly.vn",
+                    "MoTa": "Website chính thức của Zuly",
+                    "TrangThai": "hoat_dong"
+                }
+            ]
+        }
+    ]
+}
+]
