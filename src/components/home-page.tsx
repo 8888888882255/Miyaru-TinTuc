@@ -2,260 +2,276 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
-import heroImage from "@/assets/hero-image.jpg";
+import { Search, Shield, TrendingUp } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-// Interfaces theo core.json và images.json (khớp với PascalCase)
-export interface NguoiDung {
-  MaNguoiDung: number;
-  HoTen: string;
-  TenKhongDau: string;
-  VaiTro: "super_admin" | "admin";
-  TrangThai: "hoat_dong" | "khoa";
-  NgayThamGia: string;
-  Gmail: string;
-  SoTienBaoHiem: number;
-}
-
-export interface HinhAnh {
-  LoaiHinh: "anh_dai_dien" | "banner";
-  ViTri: string;
-  DuongDan: string;
-  MoTa: string;
-  TrangThai: "hien_thi" | "an";
-}
-
-export interface HinhAnhNguoiDung {
-  MaNguoiDung: number;
-  HinhAnh: HinhAnh[];
+export interface User {
+  _id: string;
+  fullName: string;
+  slug: string;
+  email: string;
+  role: "user" | "admin" | "super_admin";
+  status: "active" | "inactive" | "banned";
+  trustScore: number;
+  avatar?: {
+    url: string;
+    alt: string;
+  };
+  contact?: {
+    facebookPrimary?: string;
+    zalo?: string;
+    website?: string;
+  };
+  insurance?: {
+    amount: number;
+    currency: string;
+  };
+  createdAt: string;
 }
 
 interface HomePageProps {
-  nguoiDungData?: NguoiDung[];
-  hinhAnhData?: HinhAnhNguoiDung[];
+  users?: User[];
 }
 
-export default function HomePage({ nguoiDungData = [], hinhAnhData = [] }: HomePageProps) {
+export default function HomePage({ users = [] }: HomePageProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [danhSachNguoiDung, setDanhSachNguoiDung] = useState<NguoiDung[]>([]);
-  const [danhSachLoc, setDanhSachLoc] = useState<NguoiDung[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // Xử lý dữ liệu và lọc người dùng hoạt động
+  // Filter active users
   useEffect(() => {
-    if (!nguoiDungData || !Array.isArray(nguoiDungData)) {
-      setDanhSachNguoiDung([]);
-      setDanhSachLoc([]);
+    const activeUsers = users.filter((u) => u.status === "active");
+    setFilteredUsers(activeUsers);
+  }, [users]);
+
+  // Search users
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value.toLowerCase();
+    setSearchQuery(query);
+
+    if (!query.trim()) {
+      setFilteredUsers(users.filter((u) => u.status === "active"));
       return;
     }
-    const nguoiDungHoatDong = nguoiDungData.filter(
-      (user) => user.TrangThai === "hoat_dong"
-    );
-    setDanhSachNguoiDung(nguoiDungHoatDong);
-    setDanhSachLoc(nguoiDungHoatDong);
-  }, [nguoiDungData]);
 
-  // Tìm kiếm chỉ theo HoTen
-  useEffect(() => {
-    const tuKhoa = searchQuery.toLowerCase().trim();
-    if (tuKhoa === "") {
-      setDanhSachLoc(danhSachNguoiDung);
-      return;
-    }
-    const ketQua = danhSachNguoiDung.filter((user) =>
-      user.HoTen.toLowerCase().includes(tuKhoa)
+    const results = users.filter(
+      (u) =>
+        u.status === "active" &&
+        (u.fullName.toLowerCase().includes(query) ||
+          u.email.toLowerCase().includes(query) ||
+          u.slug.toLowerCase().includes(query))
     );
-    setDanhSachLoc(ketQua);
-  }, [searchQuery, danhSachNguoiDung]);
 
-  // Lấy ảnh đại diện của người dùng
-  const layAnhDaiDien = (maNguoiDung: number): string => {
-    if (!hinhAnhData || !Array.isArray(hinhAnhData)) {
-      return "/default-avatar.jpg";
-    }
-    const hinhAnhUser = hinhAnhData.find((h) => h.MaNguoiDung === maNguoiDung);
-    if (!hinhAnhUser) return "/default-avatar.jpg";
-    
-    const anhDaiDien = hinhAnhUser.HinhAnh.find(
-      (h) => h.LoaiHinh === "anh_dai_dien" && h.TrangThai === "hien_thi"
-    );
-    return anhDaiDien?.DuongDan || "/default-avatar.jpg";
+    setFilteredUsers(results);
   };
 
-  const danhSachSuperAdmin = danhSachLoc.filter((u) => u.VaiTro === "super_admin");
-  const danhSachAdmin = danhSachLoc.filter((u) => u.VaiTro === "admin");
+  const getRoleBadge = (role: string) => {
+    const variants: Record<string, any> = {
+      super_admin: "destructive",
+      admin: "warning",
+      user: "default",
+    };
+    const labels: Record<string, string> = {
+      super_admin: "Super Admin",
+      admin: "Admin",
+      user: "User",
+    };
+    return (
+      <Badge variant={variants[role]}>
+        {labels[role] || role}
+      </Badge>
+    );
+  };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-pink-50 via-white to-pink-100 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900 transition-all duration-500">
-      <Header />
-      <main className="flex-1">
-        {/* Hero Section - Tối ưu SEO */}
-        <section 
-          className="relative py-20 px-4 overflow-hidden bg-gradient-to-r from-pink-100 via-purple-100 to-blue-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
-          role="banner"
-          aria-label="Giới thiệu cộng đồng Admin MMO"
-        >
-          <div className="absolute inset-0 opacity-15" aria-hidden="true">
-            <img
-              src={heroImage.src}
-              alt=""
-              className="w-full h-full object-cover blur-sm"
-              loading="lazy"
-            />
-          </div>
-          <div className="container mx-auto relative z-10">
-            <div className="max-w-3xl mx-auto text-center space-y-6 animate-fade-in">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight">
-                Cộng đồng Admin{" "}
-                <span className="bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
-                  MMO
-                </span>{" "}
-                Việt Nam
-              </h1>
-              <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300">
-                Tìm kiếm và xác minh các Admin MMO uy tín trước khi giao dịch.
-              </p>
-              <div className="mt-8 relative max-w-2xl mx-auto">
-                <label htmlFor="search-admin" className="sr-only">
-                  Tìm kiếm Admin MMO theo tên
-                </label>
-                <Search 
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400 dark:text-gray-500" 
-                  aria-hidden="true"
-                />
-                <Input
-                  id="search-admin"
-                  type="search"
-                  placeholder="Nhập tên Admin để tìm kiếm..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-14 h-14 text-base rounded-2xl border-2 border-pink-300 focus:border-pink-500 shadow-md dark:bg-gray-800 dark:border-gray-700 dark:text-white transition-all"
-                  aria-label="Tìm kiếm Admin MMO"
-                />
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              Miyaru TinTuc
+            </h1>
+            <p className="text-lg md:text-xl text-blue-100 mb-8">
+              Hệ thống quản lý người dùng chuyên nghiệp với xác minh tức thì
+            </p>
+
+            {/* Search Box */}
+            <div className="relative max-w-2xl mx-auto">
+              <Search className="absolute left-4 top-3 h-5 w-5 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Tìm kiếm người dùng..."
+                value={searchQuery}
+                onChange={handleSearch}
+                className="pl-12 h-12 rounded-lg border-2 border-blue-300 focus:border-white"
+              />
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Danh sách Section */}
-        <section className="container mx-auto px-4 py-12 space-y-12">
-          {/* Danh sách Super Admin MMO */}
-          <article 
-            className="border border-purple-300 rounded-3xl p-6 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md shadow-xl"
-            aria-labelledby="super-admin-heading"
-          >
-            <h2 
-              id="super-admin-heading"
-              className="flex items-center gap-2 font-bold mb-6 text-lg md:text-xl text-purple-700 dark:text-purple-400"
-            >
-              🧭 Super Admin MMO
-            </h2>
-            {danhSachSuperAdmin.length === 0 ? (
-              <p className="text-center text-gray-500 dark:text-gray-300 italic">
-                Không tìm thấy Super Admin nào khớp với từ khóa.
-              </p>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 text-center">
-                {danhSachSuperAdmin.map((superAdmin) => (
-                  <div
-                    key={superAdmin.MaNguoiDung}
-                    onClick={() => router.push(`/${superAdmin.TenKhongDau}`)}
-                    className="cursor-pointer flex flex-col items-center transition-transform duration-300 hover:scale-110"
-                    role="button"
-                    tabIndex={0}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        router.push(`/${superAdmin.TenKhongDau}`);
-                      }
-                    }}
-                    aria-label={`Xem thông tin ${superAdmin.HoTen}`}
-                  >
-                    <div className="relative group">
-                      <img
-                        src={layAnhDaiDien(superAdmin.MaNguoiDung)}
-                        alt={`Ảnh đại diện ${superAdmin.HoTen}`}
-                        className="w-20 h-20 rounded-full object-cover border-2 border-purple-300 group-hover:border-purple-500 transition-all shadow-md"
-                        loading="lazy"
-                        width="80"
-                        height="80"
-                      />
-                      <span 
-                        className="absolute -top-2 -right-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-0.5 rounded-full shadow-sm font-semibold"
-                        aria-label={`Mã số ${superAdmin.MaNguoiDung}`}
-                      >
-                        {superAdmin.MaNguoiDung}
-                      </span>
-                    </div>
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200 mt-2 leading-tight">
-                      {superAdmin.HoTen}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </article>
+      {/* Stats Section */}
+      <section className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Tổng người dùng</CardTitle>
+              <Shield className="h-5 w-5 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{users.length}</div>
+              <p className="text-xs text-muted-foreground">Đã đăng ký hệ thống</p>
+            </CardContent>
+          </Card>
 
-          {/* Danh sách Admin MMO */}
-          <article 
-            className="border border-pink-300 rounded-3xl p-6 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md shadow-xl"
-            aria-labelledby="admin-heading"
-          >
-            <h2 
-              id="admin-heading"
-              className="flex items-center gap-2 font-bold mb-6 text-lg md:text-xl text-pink-700 dark:text-pink-400"
-            >
-              👥 Admin MMO
-            </h2>
-            {danhSachAdmin.length === 0 ? (
-              <p className="text-center text-gray-500 dark:text-gray-300 italic">
-                Không tìm thấy Admin nào khớp với từ khóa.
-              </p>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 text-center">
-                {danhSachAdmin.map((admin) => (
-                  <div
-                    key={admin.MaNguoiDung}
-                    onClick={() => router.push(`/${admin.TenKhongDau}`)}
-                    className="cursor-pointer flex flex-col items-center transition-transform duration-300 hover:scale-110"
-                    role="button"
-                    tabIndex={0}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        router.push(`/${admin.TenKhongDau}`);
-                      }
-                    }}
-                    aria-label={`Xem thông tin ${admin.HoTen}`}
-                  >
-                    <div className="relative group">
-                      <img
-                        src={layAnhDaiDien(admin.MaNguoiDung)}
-                        alt={`Ảnh đại diện ${admin.HoTen}`}
-                        className="w-20 h-20 rounded-full object-cover border-2 border-pink-300 group-hover:border-pink-500 transition-all shadow-md"
-                        loading="lazy"
-                        width="80"
-                        height="80"
-                      />
-                      <span 
-                        className="absolute -top-2 -right-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs px-2 py-0.5 rounded-full shadow-sm font-semibold"
-                        aria-label={`Mã số ${admin.MaNguoiDung}`}
-                      >
-                        {admin.MaNguoiDung}
-                      </span>
-                    </div>
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200 mt-2 leading-tight">
-                      {admin.HoTen}
-                    </p>
-                  </div>
-                ))}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Đang hoạt động</CardTitle>
+              <TrendingUp className="h-5 w-5 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-green-600">
+                {users.filter((u) => u.status === "active").length}
               </div>
-            )}
-          </article>
-        </section>
-      </main>
-      <Footer />
+              <p className="text-xs text-muted-foreground">Có thể xác minh</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Điểm tin cậy trung bình</CardTitle>
+              <TrendingUp className="h-5 w-5 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-blue-600">
+                {users.length > 0
+                  ? Math.round(
+                      users.reduce((sum, u) => sum + u.trustScore, 0) / users.length
+                    )
+                  : 0}
+              </div>
+              <p className="text-xs text-muted-foreground">Trên 100</p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Users List Section */}
+      <section className="container mx-auto px-4 py-12">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl font-bold mb-8">Danh sách người dùng</h2>
+
+          {filteredUsers.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <p className="text-gray-500">
+                  {searchQuery
+                    ? "Không tìm thấy người dùng phù hợp"
+                    : "Không có người dùng nào"}
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredUsers.map((user) => (
+                <Card
+                  key={user._id}
+                  className="hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => router.push(`/${user.slug}`)}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg">{user.fullName}</CardTitle>
+                        <p className="text-xs text-muted-foreground mt-1">{user.email}</p>
+                      </div>
+                      {user.avatar?.url && (
+                        <img
+                          src={user.avatar.url}
+                          alt={user.fullName}
+                          className="w-12 h-12 rounded-full"
+                        />
+                      )}
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Vai trò:</span>
+                      {getRoleBadge(user.role)}
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Trạng thái:</span>
+                      <Badge
+                        variant={
+                          user.status === "active"
+                            ? "default"
+                            : user.status === "inactive"
+                            ? "secondary"
+                            : "destructive"
+                        }
+                      >
+                        {user.status === "active"
+                          ? "Hoạt động"
+                          : user.status === "inactive"
+                          ? "Không hoạt động"
+                          : "Bị cấm"}
+                      </Badge>
+                    </div>
+
+                    {user.insurance && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Bảo hiểm:</span>
+                        <span className="text-sm font-medium">
+                          {user.insurance.amount.toLocaleString("vi-VN")}{" "}
+                          {user.insurance.currency}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-3 border-t">
+                      <span className="text-sm text-muted-foreground">Điểm tin cậy:</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-blue-600"
+                            style={{ width: `${user.trustScore}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm font-medium">{user.trustScore}</span>
+                      </div>
+                    </div>
+
+                    {user.contact?.website && (
+                      <div className="pt-3">
+                        <a
+                          href={user.contact.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 hover:underline"
+                        >
+                          Xem trang web →
+                        </a>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {filteredUsers.length > 0 && (
+            <div className="mt-8 text-center text-sm text-muted-foreground">
+              Hiển thị {filteredUsers.length} trong {users.length} người dùng
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

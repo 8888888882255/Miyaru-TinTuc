@@ -1,20 +1,146 @@
-[{
-    "MaNguoiDung": 1,
-    "HoTen": "Zuly",
-    "TenKhongDau": "zuly",
-    "VaiTro": "super_admin",
-    "TrangThai": "hoat_dong",
-    "NgayThamGia": "2025-05-05",
-    "Gmail": "miyaru2k5@gmail.com",
-    "SoTienBaoHiem": 7000000
-},
-{
-    "MaNguoiDung": 2,
-    "HoTen": "Miyaru",
-    "TenKhongDau": "miyaru",
-    "VaiTro": "admin",
-    "TrangThai": "hoat_dong",
-    "NgayThamGia": "2025-06-10",
-    "Gmail": "miyaru2k5@gmail.com",
-    "SoTienBaoHiem": 666660
-}]
+[
+  {
+    "id": "1",
+    "name": "Super Admin User",
+    "slug": "super-admin-user",
+    "email": "superadmin@miyarummo.com",
+    "role": "super_admin",
+    "status": "active",
+    "trustScore": 100,
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=super-admin",
+    "facebook": {
+      "chinh": "https://facebook.com/superadmin",
+      "phu": "https://facebook.com/superadmin.bak"
+    },
+    "zalo": "0123456789",
+    "web": "https://superadmin.miyarummo.com",
+    "baoHiem": {
+      "soTien": 10000000
+    },
+    "nganHang": [
+      {
+        "tenNH": "Vietcombank",
+        "soTK": "1023456789",
+        "chuTK": "Super Admin"
+      }
+    ],
+    "createdAt": "2025-01-01T00:00:00Z"
+  },
+  {
+    "id": "2",
+    "name": "Admin User",
+    "slug": "admin-user",
+    "email": "admin@miyarummo.com",
+    "role": "admin",
+    "status": "active",
+    "trustScore": 95,
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=admin",
+    "facebook": {
+      "chinh": "https://facebook.com/admin",
+      "phu": "https://facebook.com/admin.bak"
+    },
+    "zalo": "0987654321",
+    "web": "https://admin.miyarummo.com",
+    "baoHiem": {
+      "soTien": 5000000
+    },
+    "nganHang": [
+      {
+        "tenNH": "Techcombank",
+        "soTK": "9876543210",
+        "chuTK": "Admin User"
+      }
+    ],
+    "createdAt": "2025-01-02T00:00:00Z"
+  },
+  {
+    "id": "3",
+    "name": "John Doe",
+    "slug": "john-doe",
+    "email": "john@example.com",
+    "role": "user",
+    "status": "active",
+    "trustScore": 85,
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
+    "facebook": {
+      "chinh": "https://facebook.com/johndoe"
+    },
+    "zalo": "0912345678",
+    "web": "https://johndoe.com",
+    "baoHiem": {
+      "soTien": 2000000
+    },
+    "nganHang": [
+      {
+        "tenNH": "Agribank",
+        "soTK": "1111111111",
+        "chuTK": "John Doe"
+      }
+    ],
+    "createdAt": "2025-01-03T00:00:00Z"
+  },
+  {
+    "id": "4",
+    "name": "Jane Smith",
+    "slug": "jane-smith",
+    "email": "jane@example.com",
+    "role": "user",
+    "status": "active",
+    "trustScore": 92,
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=jane",
+    "facebook": {
+      "chinh": "https://facebook.com/janesmith"
+    },
+    "zalo": "0934567890",
+    "web": "https://janesmith.com",
+    "baoHiem": {
+      "soTien": 3000000
+    },
+    "nganHang": [
+      {
+        "tenNH": "BIDV",
+        "soTK": "2222222222",
+        "chuTK": "Jane Smith"
+      }
+    ],
+    "createdAt": "2025-01-04T00:00:00Z"
+  },
+  {
+    "id": "5",
+    "name": "Bob Wilson",
+    "slug": "bob-wilson",
+    "email": "bob@example.com",
+    "role": "user",
+    "status": "inactive",
+    "trustScore": 70,
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=bob",
+    "facebook": {
+      "chinh": "https://facebook.com/bobwilson"
+    },
+    "zalo": "0945678901",
+    "web": "",
+    "baoHiem": {
+      "soTien": 1500000
+    },
+    "nganHang": [],
+    "createdAt": "2025-01-05T00:00:00Z"
+  },
+  {
+    "id": "6",
+    "name": "Alice Johnson",
+    "slug": "alice-johnson",
+    "email": "alice@example.com",
+    "role": "user",
+    "status": "banned",
+    "trustScore": 30,
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=alice",
+    "facebook": {},
+    "zalo": "",
+    "web": "",
+    "baoHiem": {
+      "soTien": 0
+    },
+    "nganHang": [],
+    "createdAt": "2025-01-06T00:00:00Z"
+  }
+]

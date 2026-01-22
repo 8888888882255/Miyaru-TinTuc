@@ -4,269 +4,382 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 import {
   ShieldCheck,
-  Lock,
   Facebook,
   Globe,
   MessageCircle,
-  ChevronDown,
+  Mail,
+  Calendar,
+  TrendingUp,
 } from "lucide-react";
 
 /* ================= TYPES ================= */
 
-interface FacebookInfo {
-  chinh?: string;
-  phu?: string | string[];
-}
-
-interface BaoHiem {
-  ngayDangKy: string;
-  soTien: number;
-  nguoiBaoHiem: string;
-}
-
-interface TaiKhoanPhu {
-  nganHang: string;
-  soTaiKhoan: string;
-}
-
 export interface User {
-  id: number;
-  name: string;
-  username?: string;
-  role: string;
-  avatar: string;
-  status: string;
-  soTaiKhoan: string;
-  nganHang: string;
-  ngayThamGia: string;
+  _id: string;
+  fullName: string;
   slug: string;
-  facebook?: FacebookInfo;
-  zalo?: string;
-  web?: string;
-  baoHiem?: BaoHiem;
-  dichVu?: string[];
-  chuTaiKhoan?: string;
-  stkKhac?: TaiKhoanPhu[];
+  email: string;
+  role: "user" | "admin" | "super_admin";
+  status: "active" | "inactive" | "banned";
+  trustScore: number;
+  avatar?: {
+    url: string;
+    alt: string;
+  };
+  contact?: {
+    facebookPrimary?: string;
+    facebookSecondary?: string;
+    zalo?: string;
+    website?: string;
+  };
+  insurance?: {
+    amount: number;
+    currency: string;
+  };
+  details?: Array<{
+    title: string;
+    content: string;
+  }>;
+  seo?: {
+    title: string;
+    description: string;
+    keywords: string[];
+  };
+  createdAt: string;
+  joinedAt: string;
 }
 
 interface AdminDetailContentProps {
-  admin: User;
+  user: User;
 }
 
 /* ================= COMPONENT ================= */
 
-export default function AdminDetailContent({ admin }: AdminDetailContentProps) {
-  if (!admin) {
+export default function AdminDetailContent({ user }: AdminDetailContentProps) {
+  if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        Không tìm thấy admin
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <p className="text-gray-500">Không tìm thấy người dùng</p>
+        </main>
+        <Footer />
       </div>
     );
   }
 
-  /* ===== CHUẨN HÓA FACEBOOK PHỤ (FIX LỖI MAP) ===== */
-  const facebookPhu: string[] = Array.isArray(admin.facebook?.phu)
-    ? admin.facebook!.phu
-    : admin.facebook?.phu
-    ? [admin.facebook.phu]
-    : [];
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString("vi-VN");
+  };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-pink-50 to-pink-100">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-indigo-100">
       <Header />
 
       <main className="flex-1 container mx-auto px-4 py-10">
-        <div className="max-w-3xl mx-auto bg-white/80 rounded-3xl shadow-xl p-8 border backdrop-blur-md">
-          {/* AVATAR */}
-          <img
-            src={admin.avatar}
-            alt={admin.name}
-            className="w-32 h-32 rounded-full mx-auto border-4 border-pink-400 shadow-lg"
-          />
+        <div className="max-w-4xl mx-auto">
+          {/* Header Card */}
+          <div className="bg-white/90 rounded-3xl shadow-xl p-8 border backdrop-blur-md mb-6">
+            <div className="flex flex-col md:flex-row gap-6 items-start">
+              {/* Avatar */}
+              {user.avatar?.url && (
+                <img
+                  src={user.avatar.url}
+                  alt={user.fullName}
+                  className="w-40 h-40 rounded-full border-4 border-blue-400 shadow-lg flex-shrink-0"
+                />
+              )}
 
-          {/* NAME */}
-          <h1 className="text-3xl font-bold mt-4 text-center bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-            {admin.name}
-          </h1>
+              {/* Info */}
+              <div className="flex-1">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                  {user.fullName}
+                </h1>
 
-          {admin.username && (
-            <p className="text-center text-gray-500 mb-4">
-              @{admin.username}
-            </p>
-          )}
+                <div className="flex items-center gap-2 text-gray-600 mb-4">
+                  <Mail className="w-4 h-4" />
+                  {user.email}
+                </div>
 
-          {/* QUICK ACTION */}
-          <div className="flex justify-center gap-3 mb-6 flex-wrap">
-            {admin.facebook?.chinh && (
-              <a
-                href={`https://facebook.com/${admin.facebook.chinh}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button className="bg-blue-600 text-white flex gap-2">
-                  <Facebook className="w-4 h-4" />
-                  Facebook
-                </Button>
-              </a>
-            )}
+                {/* Badges */}
+                <div className="flex gap-2 mb-6 flex-wrap">
+                  <Badge
+                    variant={
+                      user.role === "super_admin"
+                        ? "destructive"
+                        : user.role === "admin"
+                        ? "default"
+                        : "secondary"
+                    }
+                  >
+                    {user.role === "super_admin"
+                      ? "Super Admin"
+                      : user.role === "admin"
+                      ? "Admin"
+                      : "User"}
+                  </Badge>
+                  <Badge
+                    variant={
+                      user.status === "active"
+                        ? "default"
+                        : user.status === "inactive"
+                        ? "secondary"
+                        : "destructive"
+                    }
+                  >
+                    {user.status === "active"
+                      ? "Đang hoạt động"
+                      : user.status === "inactive"
+                      ? "Không hoạt động"
+                      : "Bị cấm"}
+                  </Badge>
+                </div>
 
-            {admin.zalo && (
-              <a
-                href={`https://zalo.me/${admin.zalo}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button className="bg-indigo-600 text-white flex gap-2">
-                  <MessageCircle className="w-4 h-4" />
-                  Zalo
-                </Button>
-              </a>
-            )}
+                {/* Trust Score */}
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm font-medium">Điểm tin cậy</span>
+                    </div>
+                    <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-blue-500 to-indigo-600"
+                        style={{ width: `${user.trustScore}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <span className="text-2xl font-bold text-blue-600">
+                    {user.trustScore}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 mt-6 flex-wrap">
+              {user.contact?.facebookPrimary && (
+                <a
+                  href={user.contact.facebookPrimary}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button className="bg-blue-600 text-white flex gap-2">
+                    <Facebook className="w-4 h-4" />
+                    Facebook
+                  </Button>
+                </a>
+              )}
+
+              {user.contact?.zalo && (
+                <a
+                  href={`https://zalo.me/${user.contact.zalo}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button className="bg-indigo-600 text-white flex gap-2">
+                    <MessageCircle className="w-4 h-4" />
+                    Zalo
+                  </Button>
+                </a>
+              )}
+
+              {user.contact?.website && (
+                <a
+                  href={user.contact.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button className="bg-green-600 text-white flex gap-2">
+                    <Globe className="w-4 h-4" />
+                    Website
+                  </Button>
+                </a>
+              )}
+            </div>
           </div>
 
-          {/* ================= INFO ================= */}
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            {/* CONTACT */}
-            <Card className="p-5 border-2 border-yellow-300">
-              <h2 className="font-semibold mb-3 flex items-center gap-2 text-yellow-700">
-                <ShieldCheck className="w-5 h-5" />
+          {/* Content Grid */}
+          <div className="grid md:grid-cols-2 gap-6 mb-6">
+            {/* Contact Information */}
+            <Card className="p-6 border-2 border-blue-300">
+              <h2 className="font-bold text-lg mb-4 flex items-center gap-2 text-blue-700">
+                <Mail className="w-5 h-5" />
                 Thông tin liên hệ
               </h2>
 
-              <ul className="space-y-2 text-sm">
-                {/* FACEBOOK CHÍNH + COMBOBOX */}
-                {admin.facebook?.chinh && (
-                  <li className="flex items-center gap-2">
-                    <Facebook className="w-4 h-4 text-blue-600" />
-                    Facebook chính:
+              <ul className="space-y-3 text-sm">
+                <li>
+                  <span className="text-gray-600">Email:</span>
+                  <p className="text-blue-600 break-all">{user.email}</p>
+                </li>
+
+                {user.contact?.facebookPrimary && (
+                  <li>
+                    <span className="text-gray-600 flex items-center gap-2 mb-1">
+                      <Facebook className="w-4 h-4" />
+                      Facebook chính
+                    </span>
                     <a
-                      href={`https://facebook.com/${admin.facebook.chinh}`}
+                      href={user.contact.facebookPrimary}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline font-medium"
+                      className="text-blue-600 hover:underline break-all"
                     >
-                      {admin.facebook.chinh}
-                    </a>
-
-                    {facebookPhu.length > 0 && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger className="ml-1">
-                          <ChevronDown className="w-4 h-4 text-gray-500" />
-                        </DropdownMenuTrigger>
-
-                        <DropdownMenuContent align="start" className="w-56">
-                          {facebookPhu.map((fb, index) => (
-                            <DropdownMenuItem key={index} asChild>
-                              <a
-                                href={`https://facebook.com/${fb}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2"
-                              >
-                                <Facebook className="w-4 h-4 text-gray-500" />
-                                {fb}
-                              </a>
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                  </li>
-                )}
-
-                {admin.zalo && (
-                  <li className="flex items-center gap-2">
-                    <MessageCircle className="w-4 h-4 text-green-500" />
-                    Zalo:
-                    <a
-                      href={`https://zalo.me/${admin.zalo}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      {admin.zalo}
+                      {user.contact.facebookPrimary}
                     </a>
                   </li>
                 )}
 
-                {admin.web && (
-                  <li className="flex items-center gap-2">
-                    <Globe className="w-4 h-4" />
-                    Website:
+                {user.contact?.facebookSecondary && (
+                  <li>
+                    <span className="text-gray-600 flex items-center gap-2 mb-1">
+                      <Facebook className="w-4 h-4" />
+                      Facebook phụ
+                    </span>
                     <a
-                      href={admin.web}
+                      href={user.contact.facebookSecondary}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
+                      className="text-blue-600 hover:underline break-all"
                     >
-                      {admin.web}
+                      {user.contact.facebookSecondary}
+                    </a>
+                  </li>
+                )}
+
+                {user.contact?.zalo && (
+                  <li>
+                    <span className="text-gray-600 flex items-center gap-2 mb-1">
+                      <MessageCircle className="w-4 h-4" />
+                      Zalo
+                    </span>
+                    <p className="text-blue-600">{user.contact.zalo}</p>
+                  </li>
+                )}
+
+                {user.contact?.website && (
+                  <li>
+                    <span className="text-gray-600 flex items-center gap-2 mb-1">
+                      <Globe className="w-4 h-4" />
+                      Website
+                    </span>
+                    <a
+                      href={user.contact.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline break-all"
+                    >
+                      {user.contact.website}
                     </a>
                   </li>
                 )}
               </ul>
             </Card>
 
-            {/* BAO HIEM */}
-            <Card className="p-5 border-2 border-pink-300 bg-pink-50 relative">
-              <h2 className="font-semibold mb-3 flex items-center gap-2 text-pink-700">
-                <Lock className="w-5 h-5" />
-                Quỹ Bảo Hiểm AdminMMO
+            {/* Insurance & Details */}
+            <Card className="p-6 border-2 border-amber-300">
+              <h2 className="font-bold text-lg mb-4 flex items-center gap-2 text-amber-700">
+                <ShieldCheck className="w-5 h-5" />
+                Bảo hiểm & Hạn mức
               </h2>
 
-              {admin.baoHiem && (
-                <p className="text-sm">
-                  Từ ngày{" "}
-                  <strong>
-                    {new Date(
-                      admin.baoHiem.ngayDangKy
-                    ).toLocaleDateString("vi-VN")}
-                  </strong>
-                  , số tiền{" "}
-                  <strong className="text-pink-600">
-                    {admin.baoHiem.soTien.toLocaleString("vi-VN")}đ
-                  </strong>{" "}
-                  thuộc{" "}
-                  <strong>{admin.baoHiem.nguoiBaoHiem}</strong>
-                </p>
-              )}
+              <ul className="space-y-3 text-sm">
+                {user.insurance && (
+                  <>
+                    <li>
+                      <span className="text-gray-600">Quỹ bảo hiểm:</span>
+                      <p className="text-lg font-bold text-green-600">
+                        {user.insurance.amount.toLocaleString("vi-VN")}{" "}
+                        {user.insurance.currency}
+                      </p>
+                    </li>
+                  </>
+                )}
+
+                {user.details && user.details.length > 0 && (
+                  <>
+                    <li className="border-t pt-3">
+                      <span className="text-gray-600 font-medium block mb-2">
+                        Tài khoản ngân hàng:
+                      </span>
+                      {user.details.map((detail, idx) => (
+                        <div key={idx} className="mb-2 bg-gray-50 p-2 rounded">
+                          <p className="font-medium">{detail.title}</p>
+                          <p className="text-gray-700 font-mono text-sm">
+                            {detail.content}
+                          </p>
+                        </div>
+                      ))}
+                    </li>
+                  </>
+                )}
+              </ul>
             </Card>
           </div>
 
-          {/* BANK */}
-          <Card className="p-5 border-2 border-yellow-300">
-            <h2 className="font-semibold mb-2 text-yellow-700">
-              Dịch vụ cung cấp:
-            </h2>
-            <ul className="list-disc list-inside text-sm mb-4">
-              {admin.dichVu?.map((dv, i) => (
-                <li key={i}>{dv}</li>
-              ))}
-            </ul>
-
-            <h2 className="font-semibold mb-2 text-yellow-700">
-              Chủ tài khoản: {admin.chuTaiKhoan}
+          {/* Timeline */}
+          <Card className="p-6 border-2 border-indigo-300 mb-6">
+            <h2 className="font-bold text-lg mb-4 flex items-center gap-2 text-indigo-700">
+              <Calendar className="w-5 h-5" />
+              Lịch sử hoạt động
             </h2>
 
-            <ul className="text-sm space-y-1">
-              <li>
-                {admin.nganHang}: <strong>{admin.soTaiKhoan}</strong>
+            <ul className="space-y-3 text-sm">
+              <li className="flex items-start gap-3">
+                <div className="w-2 h-2 rounded-full bg-indigo-600 mt-2 flex-shrink-0"></div>
+                <div>
+                  <span className="text-gray-600">Tham gia:</span>
+                  <p className="font-medium">{formatDate(user.joinedAt)}</p>
+                </div>
               </li>
 
-              {admin.stkKhac?.map((stk, i) => (
-                <li key={i}>
-                  {stk.nganHang}: <strong>{stk.soTaiKhoan}</strong>
-                </li>
-              ))}
+              <li className="flex items-start gap-3">
+                <div className="w-2 h-2 rounded-full bg-indigo-600 mt-2 flex-shrink-0"></div>
+                <div>
+                  <span className="text-gray-600">Tạo tài khoản:</span>
+                  <p className="font-medium">{formatDate(user.createdAt)}</p>
+                </div>
+              </li>
             </ul>
           </Card>
+
+          {/* SEO Section */}
+          {user.seo && (
+            <Card className="p-6 border-2 border-purple-300 mb-6">
+              <h2 className="font-bold text-lg mb-4 text-purple-700">
+                Thông tin SEO
+              </h2>
+
+              <ul className="space-y-3 text-sm">
+                <li>
+                  <span className="text-gray-600 block mb-1">Tiêu đề:</span>
+                  <p className="text-gray-800">{user.seo.title}</p>
+                </li>
+
+                <li>
+                  <span className="text-gray-600 block mb-1">Mô tả:</span>
+                  <p className="text-gray-800">{user.seo.description}</p>
+                </li>
+
+                {user.seo.keywords && user.seo.keywords.length > 0 && (
+                  <li>
+                    <span className="text-gray-600 block mb-1">Từ khóa:</span>
+                    <div className="flex gap-2 flex-wrap">
+                      {user.seo.keywords.map((keyword, idx) => (
+                        <Badge key={idx} variant="secondary">
+                          {keyword}
+                        </Badge>
+                      ))}
+                    </div>
+                  </li>
+                )}
+              </ul>
+            </Card>
+          )}
         </div>
       </main>
 

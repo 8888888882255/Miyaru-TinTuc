@@ -138,5 +138,8 @@ UserSchema.index({
   "seo.keywords": "text",
 });
 
-export const UserModel: Model<IUser> =
+const UserModel: Model<IUser> =
   mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
+
+export { UserModel as User };
+export default UserModel;

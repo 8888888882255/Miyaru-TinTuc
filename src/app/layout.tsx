@@ -1,20 +1,23 @@
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Metadata } from "next";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "AdminMmo - Cộng đồng AdminMmo Việt Nam",
-  description: "Nền tảng cộng đồng giúp bạn tìm kiếm và xác minh các AdminMmo trực tuyến tại Việt Nam",
-  authors: [{ name: "AdminMmo" }],
+  title: "Miyaru TinTuc - Hệ thống quản lý người dùng",
+  description: "Nền tảng quản lý người dùng với xác minh đơn giản và an toàn",
+  authors: [{ name: "Miyaru TinTuc" }],
+  metadataBase: new URL("http://localhost:3000"),
   openGraph: {
-    title: "AdminMmo - Cộng đồng AdminMmo Việt Nam",
-    description: "Nền tảng cộng đồng giúp bạn tìm kiếm và xác minh các AdminMmo trực tuyến",
+    title: "Miyaru TinTuc",
+    description: "Hệ thống quản lý người dùng chuyên nghiệp",
     type: "website",
     images: ["/Logo.jpg"],
   },
   twitter: {
     card: "summary_large_image",
-    site: "@checkscamvn",
+    site: "@miyarutintuc",
     images: ["/Logo.jpg"],
   },
 };
@@ -25,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi">
+    <html lang="vi" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -34,8 +37,14 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>
-        <Providers>{children}</Providers>
+      <body className="flex flex-col min-h-screen">
+        <Providers>
+          <Header />
+          <main className="flex-1 w-full">
+            {children}
+          </main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );
