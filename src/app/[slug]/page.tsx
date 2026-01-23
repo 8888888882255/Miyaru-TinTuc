@@ -3,16 +3,11 @@ import path from "path";
 import { Metadata } from "next";
 import AdminDetailContent from "@/components/admin-detail-content";
 import { notFound } from "next/navigation";
-import { User, normalizeDate, getAvatarUrl } from "@/types/user";
+import { User as UserType, getAvatarUrl } from "@/types/user";
+import dbConnect from "@/lib/db";
+import User from "@/models/User";
 
-// Helper để đọc data
-async function getUsers(): Promise<User[]> {
-  const publicDir = path.join(process.cwd(), "public");
-  const fileContents = await fs.readFile(path.join(publicDir, "users.json"), "utf8");
-  return JSON.parse(fileContents);
-}
-
-// Helper để đọc settings
+// Helper để đọc settings (giữ nguyên vì settings.json có thể vẫn là file config tĩnh)
 async function getSettings() {
   try {
     const publicDir = path.join(process.cwd(), "public");
@@ -23,11 +18,15 @@ async function getSettings() {
   }
 }
 
-// Generate Static Params để Next.js biết trước các slug nếu build static
+// Generate Static Params
 export async function generateStaticParams() {
-  const users = await getUsers();
-  return users.map((user) => ({
-    slug: user.slug,
+  await dbConnect();
+  // Only fetch slugs for static params
+  const users = await User.find({}, { slug: 1 }).lean();
+  
+  return users.map((user: unknown) => ({
+    // @ts-ignore
+    slug: (user as { slug: string }).slug,
   }));
 }
 
@@ -38,8 +37,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const users = await getUsers();
-  const user = users.find((u) => u.slug === slug);
+  
+  await dbConnect();
+  const user = await User.findOne({ slug }).lean() as unknown as UserType;
   const settings = await getSettings();
   const siteName = settings?.site.name || "AdminMmo";
 
@@ -49,6 +49,8 @@ export async function generateMetadata({
     };
   }
 
+  // Need to handle avatar properly since it might be legacy string or object
+  // But getAvatarUrl helper handles both.
   const avatarUrl = getAvatarUrl(user.avatar);
   const description = user.seo?.description || `Xác minh thông tin của ${user.fullName}. Quỹ bảo hiểm: ${user.insurance?.amount.toLocaleString("vi-VN")}đ.`;
 
@@ -65,12 +67,18 @@ export async function generateMetadata({
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const users = await getUsers();
-  const user = users.find((u) => u.slug === slug);
+  
+  await dbConnect();
+  const user = await User.findOne({ slug }).lean();
 
   if (!user) {
     notFound();
   }
 
-  return <AdminDetailContent admin={user} />;
+  // Serialize and normalize ID
+  const serializedUser: UserType = JSON.parse(JSON.stringify(user));
+  // @ts-ignore
+  serializedUser.id = serializedUser._id;
+
+  return <AdminDetailContent admin={serializedUser} />;
 }
