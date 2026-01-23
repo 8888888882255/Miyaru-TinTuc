@@ -59,14 +59,15 @@ export default function AdminList() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("/users.json");
+        const response = await fetch("/api/users");
         if (!response.ok) {
           throw new Error("Failed to fetch users");
         }
         const data = await response.json();
-        const mappedUsers = data.map((u: any, index: number) => ({
+        const mappedUsers = data.map((u: User, index: number) => ({
           ...u,
-          id: u._id?.$oid || (index + 1).toString(),
+          // @ts-ignore
+          id: u._id?.$oid || u._id || (index + 1).toString(),
         }));
         setUsers(mappedUsers);
       } catch (error) {

@@ -59,13 +59,13 @@ export interface User {
   soTaiKhoan?: string;
   nganHang?: string;
   ngayThamGia?: string;
-  facebook?: any;
+  facebook?: unknown;
   zalo?: string;
   web?: string;
-  baoHiem?: any;
+  baoHiem?: unknown;
   dichVu?: string[];
   chuTaiKhoan?: string;
-  stkKhac?: any[];
+  stkKhac?: unknown[];
 }
 
 // Utility function to normalize date fields
@@ -79,11 +79,12 @@ export function normalizeUser(user: User): User {
   };
 }
 
-export function normalizeDate(date: any): string | undefined {
+export function normalizeDate(date: unknown): string | undefined {
   if (!date) return undefined;
   if (typeof date === "string") return date;
   if (date && typeof date === "object" && "$date" in date) {
-    return date.$date;
+    // @ts-ignore
+    return date.$date as string;
   }
   return undefined;
 }

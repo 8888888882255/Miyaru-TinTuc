@@ -33,7 +33,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("/users.json");
+        const response = await fetch("/api/users");
         if (!response.ok) throw new Error("Không thể tải dữ liệu người dùng");
         const data: User[] = await response.json();
         const filtered = data.filter((u) => u.role === "admin" || u.role === "super_admin");
